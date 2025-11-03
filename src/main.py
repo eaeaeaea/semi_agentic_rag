@@ -10,7 +10,7 @@ if __name__ == "__main__":
         "BASE_DIR=", os.path.dirname(os.path.abspath(__file__)),
     )
     uvicorn.run(
-        "api:app",
+        "api.api:app",
         host=os.getenv("HOST", "127.0.0.1"),
         port=int(os.getenv("PORT", "8000")),
         reload=True,

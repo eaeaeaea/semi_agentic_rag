@@ -11,8 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-import config, core
-import semi_agentic
+from src.core import core, semi_agentic, documents, ollama
+from src.config import config
 
 app = FastAPI(title="Local RAG Comparator UI + Index Builder")
 
@@ -49,7 +49,7 @@ def health():
 
 @app.get("/api/list")
 def list_files():
-    files = core.list_data_files()
+    files = documents.list_data_files()
     return {"count": len(files), "files": files}
 
 @app.delete("/api/data")
@@ -96,8 +96,19 @@ def api_query(payload: Dict[str, Any]):
         if not question:
             raise HTTPException(status_code=400, detail="'question' is required")
         top_k = int(payload.get("top_k") or config.TOP_K_DEFAULT)
-        return semi_agentic.hybrid_rag_mcp(question, top_k)
-
+        rag_ans = semi_agentic.hybrid_rag_mcp(question, top_k)
+        bare_ans = ollama.ollama_chat(config.SYSTEM_PROMPT_BARE, question)
+        return {
+            "rag": {"answer": rag_ans, "chunks": ""},
+            "llm": {"answer": bare_ans},
+            "latency_ms": {
+                "retrieval": 0,
+                "rag": 0,
+                "llm": 0,
+                "total": 0,
+            },
+            "used": {"model": config.LLM_MODEL, "embed": config.EMB_MODEL, "top_k": top_k},
+        }
     except HTTPException:
         raise
     except Exception as e:

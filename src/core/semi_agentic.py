@@ -2,7 +2,8 @@ from typing import Optional
 
 import json
 
-import core, mcp
+from src.core import core, ollama, mcp
+
 
 # ------------------------------------------------------------
 # STEP 1: ASK LLM TO EXTRACT THE NAME
@@ -17,7 +18,7 @@ def extract_name(question: str) -> Optional[str]:
         "If no name is clearly mentioned, respond with just: null\n"
         "Otherwise, return only the name string (e.g. Emre Akkus)."
     )
-    name = core.ollama_chat(system,question).strip()
+    name = ollama.ollama_chat(system, question).strip()
     if name.lower() == "null" or not name:
         return None
     return name
@@ -37,6 +38,7 @@ def hybrid_rag_mcp(question: str, top_k):
         print("⚠️ No customer name found in the question.")
     else:
         structured = mcp.call("sql.order_lookup", {"name": name, "limit": 5})
+        print("Structured data:\n", structured, "\n")
 
     unstructured = rag_search(question, top_k)
 
@@ -54,7 +56,7 @@ Question:
 
 Answer concisely using both sources.
 """
-    answer = core.ollama_chat(system, prompt)
+    answer = ollama.ollama_chat(system, prompt)
     print("\n💬 Final Answer:\n", answer)
 
     return answer
