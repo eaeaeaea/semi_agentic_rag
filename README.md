@@ -2,6 +2,9 @@
 
 Python Orchestrated RAG implementation with minimalistic MCP integration.
 
+Run with MCP server at:
+https://github.com/eaeaeaea/mcp 
+
 Built on top of: 
 https://github.com/eaeaeaea/local_rag_ollama
 
